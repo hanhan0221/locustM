@@ -13,7 +13,6 @@ import os.path
 import os
 from subprocess import Popen
 import psutil
-import platform
 
 locust_script = './hztest/rpc/script/internal-test.py'  # Locust master script file
 script_filename = 'internal-test.py'  # default script file name of client if don't select file from web
@@ -65,24 +64,24 @@ def send_script(client_id, filename, script):
 
 # 启动客户端压测进程
 def run(client_id, num, filename):
-    logger.info('Web server: send new command - [run locusts slave(%s)]' % client_id)
+    logger.info('Web server: send new command - [run locust slave(%s)]' % client_id)
     cmd_queue.put({'type': 'run', 'client_id': client_id, 'filename': filename, 'num': num})
     q = wait_result()
     if q:
         if q == 'OK':
-            logger.info('Web server: command - [run locusts slave(%s)] - Got response!' % client_id)
+            logger.info('Web server: command - [run locust slave(%s)] - Got response!' % client_id)
             return 'Client %s run successful!' % client_id
     return 'Client %s run failed!' % client_id
 
 
 # 停止客户端压测进程
 def stop(client_id):
-    logger.info('Web server: send new command - [stop locusts slave(%s)]' % client_id)
+    logger.info('Web server: send new command - [stop locust slave(%s)]' % client_id)
     cmd_queue.put({'type': 'stop', 'client_id': client_id})
     q = wait_result()
     if q:
         if q == 'None':
-            logger.info('Web server: command - [stop locusts slave(%s)] - Got response!' % client_id)
+            logger.info('Web server: command - [stop locust slave(%s)] - Got response!' % client_id)
             return 'Client %s stop successful!' % client_id
     return 'Client %s stop failed!' % client_id
 
@@ -156,7 +155,7 @@ def hello(request):
         global locust_status, p, locust_script, script_filename
         context = dict()
         context['filelist'] = []
-        context['hello'] = 'Clients list OK!'
+        context['hello'] = 'Hello!'
         context['script'] = ''
         context['text'] = ''
         context['clients'] = refresh_clients()
@@ -228,44 +227,33 @@ def hello(request):
                         break
 
                 # 获取客户端系统资源利用率
-                if request.POST.get('mon_clients', False):
+                if request.POST.get('mon_clients', None):
                     psinfo = []
                     for c in context['clients']['clients']:
                         psinfo.append(get_psinfo(c['id']))
                     context['psinfos'] = psinfo
-                    context['mon_flag'] = "Checked"
-                    context['hello'] = "Clients's monitor data refresh OK！"
-                else:
-                    context['mon_flag'] = ""
 
             # 启动/停止Locust Master
             if 'start_locust' in request.POST or 'stop_locust' in request.POST:
                 if locust_status == 'run':
                     # 停止Locust Master
                     if p is not None:
-                        logger.info("Server: try to stop the locusts master!")
+                        logger.info("Server: try to stop the locust master!")
                         if p.poll() is None:
                             try:
                                 # 先停止子进程再停止自身进程，Popen在容器中启动会有两个进程，一个是shell进程，另一个是应用进程
-                                procs = p.children(recursive=True)
+                                procs = p.children()
                                 for proc in procs:
-                                    if platform.system() == "Windows":
-                                        proc.send_signal(0)
-                                    else:
-                                        proc.terminate()
-                                    proc.wait()
-                                if platform.system() == "Windows":
-                                    p.send_signal(0)
-                                else:
-                                    p.terminate()
+                                    proc.terminate()
+                                p.terminate()
                                 p.wait()
                                 p = None
-                                logger.info("Server: locusts master stopped!")
+                                logger.info("Server: locust master stopped!")
                             except:
                                 pass
                     if p is None:
-                        context['hello'] = 'Locusts master has been stopped!'
-                        logger.info("Server: locusts master is stopped!")
+                        context['hello'] = 'Locust master has been stopped!'
+                        logger.info("Server: locust master is stopped!")
                         locust_status = 'stop'
                         # 通知各客户端停止压测
                         for client in context['clients']['clients']:
@@ -273,23 +261,21 @@ def hello(request):
                         context['clients'] = refresh_clients()
                 else:
                     # 启动Locust的Master模式
-                    p = psutil.Popen('locusts -f %s --master --no-reset-stats' % locust_script, shell=True, stdout=None, stderr=None)
+                    p = psutil.Popen('locust -f %s --master --no-reset-stats' % locust_script, shell=True, stdout=None, stderr=None)
                     time.sleep(1)
                     if p.poll() is not None:
                         # 判断Locust进程是否启动失败并给出提示
                         if p.poll() != 0:
                             logger.info("Server: failed to start locus master...")
-                            context['hello'] = 'Failed to start locusts master! Please check script file: %s' % locust_script
+                            context['hello'] = 'Failed to start locust master! Please check script file: %s' % locust_script
                             p = None
                     else:
                         # 成功启动Locust的Master模式进程
                         print("Locust Master process PID:{}".format(p.pid))
-                        logger.info("Server: locusts master is running...")
-                        context['hello'] = 'Locusts master has been running!'
+                        logger.info("Server: locust master is running...")
+                        context['hello'] = 'Locust master has been running!'
                         locust_status = 'run'
         context['locust'] = locust_status
-        host = request.get_host()
-        context['host'] = host.split(':')[0]
         return render(request, 'hello.html', context)
 
 

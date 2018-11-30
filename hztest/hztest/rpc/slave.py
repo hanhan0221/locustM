@@ -19,7 +19,6 @@ import sys
 from subprocess import Popen
 import psutil as ps
 import shutil
-import platform
 
 
 STATE_INIT, STATE_RUNNING, STATE_STOPPED = ["ready", "running", "stopped"]
@@ -171,22 +170,11 @@ class Slave(Client):
         self.state = STATE_STOPPED
         self.slave_num = 0
         for p in self.processes:
-            try:
-                procs = p.children(recursive=True)
-                for proc in procs:
-                    if platform.system() == "Windows":
-                        proc.send_signal(0)
-                    else:
-                        proc.terminate()
-                    proc.wait()
-                if platform.system() == "Windows":
-                    p.send_signal(0)
-                else:
-                    p.terminate()
-                p.wait()
-            except:
-                pass
-        logger.info("Quit a locusts client process!")
+            procs = p.children()
+            for proc in procs:
+                proc.terminate()
+            p.terminate()
+            logger.info("Quit a locust client process!")
         self.processes = []
 
     # 运行locust压测进程
@@ -202,7 +190,7 @@ class Slave(Client):
             script_file.append(os.path.join('./script/', file_name[i % len(file_name)]))
         # 启动压测进程
         for i in range(slave_num):
-            cmd = 'locusts -f %s --slave --no-reset-stats --master-host=%s' % (script_file[i], master_host)
+            cmd = 'locust -f %s --slave --no-reset-stats --master-host=%s' % (script_file[i], master_host)
             print cmd
             p = ps.Popen(cmd, shell=True, stdout=None, stderr=None)
             self.processes.append(p)
