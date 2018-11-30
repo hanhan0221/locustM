@@ -20,9 +20,9 @@ Slave:
 		python slave.py MASTER_IP
 
 # Make docker images:
-    docker build -t locust -f dockerfile_locust .
-    docker build -t locust:master -f dockerfile_master .
-    docker build -t locust:slave -f dockerfile_slave .
+    docker build -t locusts -f dockerfile_locust .
+    docker build -t springsoft/locusts:master -f dockerfile_master .
+    docker build -t springsoft/locusts:slave -f dockerfile_slave .
 
 # Run docker images:
 **Master:**

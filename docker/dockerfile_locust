@@ -1,6 +1,6 @@
 # 使用Python官方镜像作为镜像的基础
 FROM python:2.7-slim
-MAINTAINER biyunfei
+MAINTAINER springsoft
 # 添加vim和gcc依赖
 RUN apt-get update && apt-get install -y vim gcc \
 # 用完包管理器后安排打扫卫生可以显著的减少镜像大小
