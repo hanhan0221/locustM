@@ -190,7 +190,7 @@ class Slave(Client):
             script_file.append(os.path.join('./script/', file_name[i % len(file_name)]))
         # 启动压测进程
         for i in range(slave_num):
-            cmd = 'locust -f %s --slave --no-reset-stats --master-host=%s' % (script_file[i], master_host)
+            cmd = 'locusts -f %s --slave --no-reset-stats --master-host=%s' % (script_file[i], master_host)
             print cmd
             p = ps.Popen(cmd, shell=True, stdout=None, stderr=None)
             self.processes.append(p)

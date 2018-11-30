@@ -261,7 +261,7 @@ def hello(request):
                         context['clients'] = refresh_clients()
                 else:
                     # 启动Locust的Master模式
-                    p = psutil.Popen('locust -f %s --master --no-reset-stats' % locust_script, shell=True, stdout=None, stderr=None)
+                    p = psutil.Popen('locusts -f %s --master --no-reset-stats' % locust_script, shell=True, stdout=None, stderr=None)
                     time.sleep(1)
                     if p.poll() is not None:
                         # 判断Locust进程是否启动失败并给出提示
