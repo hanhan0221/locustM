@@ -2,7 +2,9 @@
 FROM locust
 MAINTAINER springsoft
 # 把当前目录下的文件拷贝到 容器里的/app里
-ADD ../hztest /app/hztest
+ADD requirements.txt /app
+RUN pip install -r requirements.txt
+ADD ../ /app/hztest
 # 设置工作空间为/app
 WORKDIR /app/hztest
 # 设置时区

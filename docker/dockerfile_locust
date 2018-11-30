@@ -9,6 +9,6 @@ RUN apt-get update && apt-get install -y vim gcc \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 # 设置工作空间为/app
 WORKDIR /app
-# 安装requirements.txt中指定的依赖
-ADD requirements.txt /app
-RUN pip install -r requirements.txt
+# 安装httprunner locust
+RUN pip install httprunner
+RUN pip install locust

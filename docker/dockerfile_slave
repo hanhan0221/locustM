@@ -1,6 +1,8 @@
 # 使用Python官方镜像作为镜像的基础
 FROM locust
 MAINTAINER springsoft
+ADD requirements.txt /app
+RUN pip install -r requirements.txt
 # 把当前目录下的文件拷贝到 容器里的/app里
 ADD ../hztest /app/hztest
 # 设置工作空间为/app
