@@ -4,11 +4,10 @@ MAINTAINER springsoft
 
 # 把当前目录下的文件拷贝到 容器里的/app里
 ADD ./hztest /app/hztest
+RUN pip install -r ./hztest/requirements.txt
+
 # 设置工作空间为/app
 WORKDIR /app/hztest
-
-# 安装
-RUN pip install -r requirements.txt
 
 # 设置时区
 RUN echo "Asia/Shanghai" > /etc/timezone
